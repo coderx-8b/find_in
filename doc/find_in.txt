@@ -62,7 +62,7 @@ query and Backspace deletes its last character. The top border shows the
 query and active directory; the bottom border shows the current match index,
 match count, and total file count.
 
-Use j/k or arrow keys to select, Enter to open, and q or Escape to close.
+Use <C-n>/<C-p> or arrow keys to select, Enter to open, and q or Escape to close.
 Other actions include <C-v> for a vertical split, <C-x> for a horizontal
 split, <C-t> for a tab, <C-c> for cached directory, <C-a> to choose a recent
 directory or add one, <C-.> for CWD, <C-d> to bookmark, and <C-r> to rescan.

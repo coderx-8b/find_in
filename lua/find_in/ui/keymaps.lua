@@ -84,7 +84,7 @@ function M.attach(ctx)
 		local add = { add_new = true }
 		choices[#choices + 1] = add
 		local choice_buf, choice_win = require("find_in.ui.window").open({
-			title = " Switch directory ", footer = "  j/k move · Enter choose · Esc close  ",
+			title = " Switch directory ", footer = "  Ctrl-N/P move · Enter choose · Esc close  ",
 		})
 		local selected = 1
 		local function close_choices()
@@ -133,8 +133,8 @@ function M.attach(ctx)
 				vim.keymap.set("n", key, fn, { buffer = choice_buf, silent = true, nowait = true })
 			end
 		end
-		bind({ "j", "<Down>" }, function() selected = math.min(#choices, selected + 1); draw_choices() end)
-		bind({ "k", "<Up>" }, function() selected = math.max(1, selected - 1); draw_choices() end)
+		bind({ "<C-n>", "<Down>" }, function() selected = math.min(#choices, selected + 1); draw_choices() end)
+		bind({ "<C-p>", "<Up>" }, function() selected = math.max(1, selected - 1); draw_choices() end)
 		bind({ "<CR>" }, choose)
 		bind({ "q", "<Esc>" }, close_choices)
 		draw_choices()

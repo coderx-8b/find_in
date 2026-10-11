@@ -14,7 +14,7 @@ By default, the plugin initializes its search root to **the directory where Neov
    - The only external requirement is `ripgrep` (`rg`) for multi-threaded file listing.
 2. **Aesthetics & Ergonomics Inspired by `mini.files`**:
    - Clean, centered floating window with subtle borders and clear path indicators.
-   - Buffer-local, intuitive Vim keybindings (`j`/`k`, `<CR>`, `q`, `<C-v>`, `<C-s>`).
+   - Buffer-local keybindings (`<C-n>`/`<C-p>`, `<CR>`, `q`, `<C-v>`, `<C-s>`).
    - Integrated live filtering for instantaneous item narrowing.
    - Optional file icons (auto-detects `mini.icons` or `nvim-web-devicons` if available, falls back gracefully to plain text).
 3. **Frictionless Path Switching**:
@@ -85,7 +85,7 @@ While the `find_in` floating window is open, the user can change the search root
 3. **Prompt / Border**:
    - The top border shows a caret, query, and active directory.
    - The bottom border shows the current match index, match count, and total item count.
-   - Typing filters results in normal mode; `<Down>` / `<Up>` or `<C-j>` / `<C-k>` navigates items.
+   - Typing filters results in normal mode; `<C-n>` / `<C-p>` or arrow keys navigate items.
 4. **Item List**:
    - Shows relative file paths from the active search root.
    - Directory parts are dimmed (`Comment` highlight), file names highlighted (`Function` or `Normal`).
@@ -107,8 +107,8 @@ While the `find_in` floating window is open, the user can change the search root
 | `<C-v>` | Split Vertical | Opens selected file in a vertical split and closes UI. |
 | `<C-x>` / `<C-s>` | Split Horizontal | Opens selected file in a horizontal split and closes UI. |
 | `<C-t>` | Open Tab | Opens selected file in a new tab page and closes UI. |
-| `j` / `<Down>` / `<C-n>` | Cursor Down | Moves selection down one item. |
-| `k` / `<Up>` | Cursor Up | Moves selection up one item. |
+| `<C-n>` / `<Down>` | Cursor Down | Moves selection down one item. |
+| `<C-p>` / `<Up>` | Cursor Up | Moves selection up one item. |
 | `q` / `<Esc>` | Close | Closes the floating window cleanly. |
 
 ### 4.2 In-UI Path Switching Keymaps
@@ -258,8 +258,8 @@ require("find_in").setup({
     close = { "q", "<Esc>" },
 
     -- Navigation
-    down = { "j", "<Down>", "<C-n>" },
-    up = { "k", "<Up>" },
+    down = { "<Down>", "<C-n>" },
+    up = { "<Up>", "<C-p>" },
 
     -- Path switching actions
     switch_cached = "<C-c>",    -- Switch search to cached directory
