@@ -49,10 +49,11 @@ While the `find_in` floating window is open, the user can change the search root
 - If the user switches directories before a running ripgrep search finishes, the previous process is cancelled immediately to prevent race conditions.
 - Respects `.gitignore` and `.ignore` files automatically.
 
-### 2.5 In-Window Live Filtering
-- A filter input allows instant substring or fuzzy matching against the gathered file paths.
-- As the user types, the list filters in real-time, highlighting matching segments.
-- Backspace / clearing restores the complete file listing.
+### 2.5 Interactive Filtering
+- Typing in normal mode filters the current ripgrep result set without editing the results buffer.
+- Plain queries use fuzzy matching, ordered by match width and then earliest match position.
+- Query modifiers follow `mini.pick`: `'text` matches an exact substring, `^text` matches a prefix, `text$` matches a suffix, and `*text` explicitly requests fuzzy matching.
+- Backspace removes one character and `<C-u>` clears the query. Matching characters in the selected item are highlighted.
 
 ---
 
@@ -81,9 +82,10 @@ While the `find_in` floating window is open, the user can change the search root
 2. **Title Bar**:
    - Shows active search directory formatted relative to `~`.
    - Right-aligned indicator showing the currently saved cached folder.
-3. **Filter Header**:
-   - Clean single-line input prompt at the top.
-   - Direct typing filters results; `<Down>` / `<Up>` or `<C-j>` / `<C-k>` navigates items.
+3. **Prompt / Border**:
+   - The top border shows a caret, query, and active directory.
+   - The bottom border shows the current match index, match count, and total item count.
+   - Typing filters results in normal mode; `<Down>` / `<Up>` or `<C-j>` / `<C-k>` navigates items.
 4. **Item List**:
    - Shows relative file paths from the active search root.
    - Directory parts are dimmed (`Comment` highlight), file names highlighted (`Function` or `Normal`).

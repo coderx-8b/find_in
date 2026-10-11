@@ -1,50 +1,44 @@
 local M = {}
 local ns = vim.api.nvim_create_namespace("find_in")
+
 function M.draw(ctx)
-	if not vim.api.nvim_buf_is_valid(ctx.buf) then
-		return
-	end
-	local filtering = vim.api.nvim_get_current_buf() == ctx.buf and vim.fn.mode():match("^i") ~= nil
-	local width = vim.api.nvim_win_get_width(ctx.win)
-	local path = require("find_in.path").format(ctx.dir.abs)
-	local head = "[Find In] " .. path .. " ── Query: "
-	local lines = {
-		head .. ctx.query,
-	}
-	local first = #lines + 1
-	if #ctx.filtered == 0 then
-		lines[#lines + 1] = "  No files found in " .. require("find_in.path").format(ctx.dir.abs)
+	if not vim.api.nvim_buf_is_valid(ctx.buf) or not vim.api.nvim_win_is_valid(ctx.win) then return end
+	local title = " > " .. ctx.query .. " ▏ " .. require("find_in.path").format(ctx.dir.abs) .. " "
+	local total, count = #ctx.files, #ctx.filtered
+	local footer = string.format(" %d | %d / %d ", count == 0 and 0 or ctx.selected, count, total)
+	local cfg = vim.api.nvim_win_get_config(ctx.win)
+	cfg.title, cfg.title_pos, cfg.footer, cfg.footer_pos = title, "left", footer, "right"
+	vim.api.nvim_win_set_config(ctx.win, cfg)
+
+	local lines = {}
+	if count == 0 then
+		lines[1] = ctx.query == "" and "No files found" or "No matches"
 	else
-		for index, file in ipairs(ctx.filtered) do
-			lines[#lines + 1] = (index == ctx.selected and "> " or "  ") .. file
+		local available = math.max(1, vim.api.nvim_win_get_height(ctx.win))
+		local first = math.max(1, math.min(ctx.selected - math.floor(available / 2), count - available + 1))
+		for index = first, math.min(count, first + available - 1) do
+			lines[#lines + 1] = (index == ctx.selected and "> " or "  ") .. ctx.filtered[index]
 		end
 	end
-	local last = #lines
-	lines[#lines + 1] = string.rep("─", math.max(1, width - 2))
-	lines[#lines + 1] = "<CR> open │ <C-v> vsplit │ <C-c> cached │ <C-p> path │ q close"
-	lines[#lines + 1] = string.format("%d items (filtered from %d)", #ctx.filtered, #ctx.files)
-	while #lines < vim.api.nvim_win_get_height(ctx.win) do
-		table.insert(lines, last + 1, string.rep(" ", math.max(0, width - 2)))
-		last = last + 1
-	end
-	-- Keep the buffer writable for the whole time the filter is in insert mode.
-	-- Async scans and TextChangedI both redraw this buffer; turning modifiable
-	-- off at the end of a redraw makes the next typed character fail with E21.
 	vim.bo[ctx.buf].modifiable = true
 	vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, lines)
-	vim.bo[ctx.buf].modifiable = filtering
+	vim.bo[ctx.buf].modifiable = false
 	vim.api.nvim_buf_clear_namespace(ctx.buf, ns, 0, -1)
-	for row = first - 1, last - 1 do
-		local text = lines[row + 1]
-		local slash = text:match("^%s*().*/")
-		if slash then
-			vim.api.nvim_buf_add_highlight(ctx.buf, ns, "Comment", row, 0, #text - #text:match("[^/]+$") - 1)
+	if count > 0 then
+		local first_item = math.max(1, math.min(ctx.selected - math.floor(math.max(1, vim.api.nvim_win_get_height(ctx.win)) / 2), count - math.max(1, vim.api.nvim_win_get_height(ctx.win)) + 1))
+		local file = ctx.filtered[ctx.selected] or ""
+		local match = require("find_in.filter").match(file, ctx.query)
+		if match then
+			for _, col in ipairs(match.positions) do
+				vim.api.nvim_buf_add_highlight(ctx.buf, ns, "IncSearch", ctx.selected - first_item, col + 1, col + 2)
+			end
 		end
 	end
-	if filtering then
-		vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #head + #ctx.query - 1) })
-	else
-		vim.api.nvim_win_set_cursor(ctx.win, { math.max(first, math.min(last, first + ctx.selected - 1)), 0 })
+	if count > 0 then
+		local height = vim.api.nvim_buf_line_count(ctx.buf)
+		local row = math.max(0, math.min(height - 1, math.floor(height / 2)))
+		vim.api.nvim_win_set_cursor(ctx.win, { row + 1, 0 })
 	end
 end
+
 return M
