@@ -16,7 +16,12 @@ function M.draw(ctx)
   lines[#lines + 1] = string.rep("─", math.max(1, width - 2))
   lines[#lines + 1] = "<CR> open │ <C-v> vsplit │ <C-c> cached │ <C-p> path │ <C-.> cwd │ q close"
   lines[#lines + 1] = string.format("%d files (filtered from %d)", #ctx.filtered, #ctx.files)
-  vim.bo[ctx.buf].modifiable = true; vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, lines); vim.bo[ctx.buf].modifiable = false
+  -- Keep the buffer writable for the whole time the filter is in insert mode.
+  -- Async scans and TextChangedI both redraw this buffer; turning modifiable
+  -- off at the end of a redraw makes the next typed character fail with E21.
+  vim.bo[ctx.buf].modifiable = true
+  vim.api.nvim_buf_set_lines(ctx.buf, 0, -1, false, lines)
+  vim.bo[ctx.buf].modifiable = filtering
   vim.api.nvim_buf_clear_namespace(ctx.buf, ns, 0, -1)
   for row = first - 1, last - 1 do
     local text = lines[row + 1]; local slash = text:match("^%s*().*/")
