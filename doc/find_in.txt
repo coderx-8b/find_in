@@ -60,5 +60,7 @@ Use j/k or arrow keys to select, Enter to open, and q or Escape to close.
 Other actions include <C-v> for a vertical split, <C-x> for a horizontal
 split, <C-t> for a tab, <C-c> for cached directory, <C-p> to enter a
 directory, <C-.> for CWD, <C-d> to bookmark, and <C-r> to rescan.
+Press <C-?> to show the in-picker keymap help. Press it again to return to
+the file list. The help screen reflects configured mappings.
 
 All mappings can be overridden with the |find_in-setup| mappings table.

@@ -11,7 +11,29 @@ function M.draw(ctx)
 	vim.api.nvim_win_set_config(ctx.win, cfg)
 
 	local lines = {}
-	if count == 0 then
+	if ctx.show_help then
+		local maps = require("find_in.config").get().mappings
+		local function keys(value)
+			if type(value) == "table" then return table.concat(value, ", ") end
+			return value or ""
+		end
+		lines = {
+			"Keymaps (press " .. keys(maps.help) .. " to return)",
+			keys(maps.open) .. "  Open selected file",
+			keys(maps.split) .. "  Open in horizontal split",
+			keys(maps.vsplit) .. "  Open in vertical split",
+			keys(maps.tab) .. "  Open in new tab",
+			keys(maps.close) .. "  Close picker",
+			keys(maps.down) .. "  Move selection down",
+			keys(maps.up) .. "  Move selection up",
+			keys(maps.switch_cached) .. "  Switch to cached directory",
+			keys(maps.switch_path) .. "  Enter a directory",
+			keys(maps.switch_cwd) .. "  Switch to working directory",
+			keys(maps.bookmark) .. "  Bookmark current directory",
+			keys(maps.refresh) .. "  Rescan files",
+			"<C-u>  Clear query; <BS>  Delete last query character",
+		}
+	elseif count == 0 then
 		lines[1] = ctx.query == "" and "No files found" or "No matches"
 	else
 		local available = math.max(1, vim.api.nvim_win_get_height(ctx.win))

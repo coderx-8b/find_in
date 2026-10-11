@@ -37,6 +37,7 @@ function M.attach(ctx)
 		vim.cmd.edit(vim.fn.fnameescape(target))
 	end
 	map(maps.close, close)
+	map(maps.help, function() ctx.show_help = not ctx.show_help; redraw() end)
 	map(maps.down, function() ctx.selected = math.min(#ctx.filtered, ctx.selected + 1); redraw() end)
 	map(maps.up, function() ctx.selected = math.max(1, ctx.selected - 1); redraw() end)
 	map(maps.open, function() open("open") end)
