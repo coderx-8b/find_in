@@ -14,7 +14,9 @@ function M.open()
   vim.bo[buf].buftype = "nofile"; vim.bo[buf].bufhidden = "wipe"; vim.bo[buf].swapfile = false
   vim.wo[win].cursorline = false; vim.wo[win].wrap = false; vim.wo[win].signcolumn = "no"
   -- Keep the real editor cursor from obscuring the `>` selection marker.
-  vim.wo[win].winhighlight = "Cursor:Normal,CursorIM:Normal"
+  -- Neovim can render the terminal cursor through either Cursor or
+  -- TermCursor depending on the UI. Hide both in this window.
+  vim.wo[win].winhighlight = "Cursor:Normal,CursorIM:Normal,TermCursor:Normal"
   return buf, win
 end
 return M
