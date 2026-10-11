@@ -12,7 +12,8 @@ function M.open()
     row = math.floor((lines - height) / 2) - 1, col = math.floor((columns - width) / 2), border = cfg.border,
     title = " > ", title_pos = "left", footer = "  0 | 0 / 0 ", footer_pos = "right" })
   vim.bo[buf].buftype = "nofile"; vim.bo[buf].bufhidden = "wipe"; vim.bo[buf].swapfile = false
-  vim.wo[win].cursorline = true; vim.wo[win].wrap = false; vim.wo[win].signcolumn = "no"
+  vim.wo[win].cursorline = false; vim.wo[win].wrap = false; vim.wo[win].signcolumn = "no"
+  vim.wo[win].winhighlight = "Cursor:Normal,CursorIM:Normal"
   return buf, win
 end
 return M

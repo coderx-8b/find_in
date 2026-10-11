@@ -56,11 +56,6 @@ function M.draw(ctx)
 			end
 		end
 	end
-	if count > 0 then
-		local height = vim.api.nvim_buf_line_count(ctx.buf)
-		local row = math.max(0, math.min(height - 1, math.floor(height / 2)))
-		vim.api.nvim_win_set_cursor(ctx.win, { row + 1, 0 })
-	end
 end
 
 return M
