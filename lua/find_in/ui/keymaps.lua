@@ -8,7 +8,13 @@ function M.attach(ctx)
 	local maps = require("find_in.config").get().mappings
 	local function redraw() require("find_in.ui.render").draw(ctx) end
 	local function map(keys, fn)
-		each(keys, function(key) vim.keymap.set("n", key, fn, { buffer = ctx.buf, silent = true, nowait = true }) end)
+		each(keys, function(key) vim.keymap.set("n", key, fn, { buffer = ctx.buf, silent = true, nowait = true, noremap = true }) end)
+	end
+	local function add_to_query(value)
+		ctx.query = ctx.query .. value
+		ctx.filtered = require("find_in.filter").apply(ctx.files, ctx.query)
+		ctx.selected = 1
+		redraw()
 	end
 	local function refresh()
 		require("find_in.rg").scan(ctx.dir, function(files)
@@ -36,6 +42,14 @@ function M.attach(ctx)
 		if kind == "vsplit" then vim.cmd("vsplit") elseif kind == "split" then vim.cmd("split") elseif kind == "tab" then vim.cmd("tabnew") end
 		vim.cmd.edit(vim.fn.fnameescape(target))
 	end
+	-- Buffer-local nonrecursive mappings take printable keys before any global
+	-- normal-mode mapping can consume them. Action mappings below replace these
+	-- handlers for their configured keys.
+	for byte = 32, 126 do
+		local char = string.char(byte)
+		map(char, function() add_to_query(char) end)
+	end
+
 	map(maps.close, close)
 	map(maps.help, function() ctx.show_help = not ctx.show_help; redraw() end)
 	map(maps.down, function() ctx.selected = math.min(#ctx.filtered, ctx.selected + 1); redraw() end)
@@ -82,7 +96,7 @@ function M.attach(ctx)
 			if #ctx.query > 0 then ctx.query = vim.fn.strcharpart(ctx.query, 0, vim.fn.strchars(ctx.query) - 1); changed = true end
 			if not changed then return "" end
 		elseif trans == "<C-u>" then ctx.query, changed = "", true
-		elseif key:byte() and key:byte() >= 32 and key:byte() ~= 127 and vim.fn.strchars(key) == 1 then
+		elseif key:byte() and key:byte() >= 128 and vim.fn.strchars(key) == 1 then
 			ctx.query, changed = ctx.query .. key, true
 		end
 		if changed then
