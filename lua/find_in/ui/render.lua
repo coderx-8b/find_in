@@ -2,6 +2,7 @@ local M = {}
 local ns = vim.api.nvim_create_namespace("find_in")
 function M.draw(ctx)
   if not vim.api.nvim_buf_is_valid(ctx.buf) then return end
+  local filtering = vim.api.nvim_get_current_buf() == ctx.buf and vim.fn.mode():match("^i") ~= nil
   local width = vim.api.nvim_win_get_width(ctx.win)
   local cached = ctx.state.cached and require("find_in.path").format(ctx.state.cached.abs) or "none"
   local lines = { "[Find In] " .. require("find_in.path").format(ctx.dir.abs) .. "    [Cached: " .. cached .. "]",
@@ -21,6 +22,11 @@ function M.draw(ctx)
     local text = lines[row + 1]; local slash = text:match("^%s*().*/")
     if slash then vim.api.nvim_buf_add_highlight(ctx.buf, ns, "Comment", row, 0, #text - #text:match("[^/]+$") - 1) end
   end
-  vim.api.nvim_win_set_cursor(ctx.win, { math.max(first, math.min(last, first + ctx.selected - 1)), 0 })
+  if filtering then
+    local prompt = require("find_in.config").get().ui.prompt
+    vim.api.nvim_win_set_cursor(ctx.win, { 2, #prompt + #ctx.query })
+  else
+    vim.api.nvim_win_set_cursor(ctx.win, { math.max(first, math.min(last, first + ctx.selected - 1)), 0 })
+  end
 end
 return M
