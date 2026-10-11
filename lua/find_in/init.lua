@@ -49,7 +49,12 @@ function M.set_dir(value)
 		end
 		local s = state()
 		s.active, s.cached = dir, dir
-		require("find_in.cache").write(dir)
+		require("find_in.cache").add_path(dir)
+		s.paths = { dir }
+		for _, item in ipairs(require("find_in.cache").read_paths()) do
+			local recent = require("find_in.path").parse(item.abs)
+			if recent and recent.abs ~= dir.abs then s.paths[#s.paths + 1] = recent end
+		end
 		return M.open()
 	end
 	if value then
@@ -65,7 +70,7 @@ end
 function M.reset_cache()
 	require("find_in.cache").clear()
 	local s = state()
-	s.cached = nil
+	s.cached, s.paths = nil, {}
 end
 function M.get_active_dir()
 	return state().active

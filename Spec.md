@@ -19,7 +19,7 @@ By default, the plugin initializes its search root to **the directory where Neov
    - Optional file icons (auto-detects `mini.icons` or `nvim-web-devicons` if available, falls back gracefully to plain text).
 3. **Frictionless Path Switching**:
    - **Default**: Opens immediately in the directory where Neovim is running (`getcwd()`).
-   - **In-UI Keymaps**: Switch search root dynamically while inside the UI (e.g., `<C-c>` for cached folder, `<C-p>` to type a `$HOME`-relative folder, `<C-.>` to return to CWD) without closing and reopening.
+   - **In-UI Keymaps**: Switch search root dynamically while inside the UI (e.g., `<C-c>` for cached folder, `<C-a>` to add or choose a path, `<C-.>` to return to CWD) without closing and reopening.
    - **Persistent Cache**: Remembers custom folders across invocations and Neovim sessions.
 
 ---
@@ -34,7 +34,7 @@ By default, the plugin initializes its search root to **the directory where Neov
 ### 2.2 In-UI Path Switching Keymaps
 While the `find_in` floating window is open, the user can change the search root on the fly:
 - **Switch to Cached Directory** (`<C-c>`): Instantly triggers ripgrep in the saved cached folder and refreshes the file list.
-- **Set/Type New Directory** (`<C-p>`): Prompts for a path relative to `$HOME` (with tab completion). Validates the path, sets it as the active directory, saves it to cache, and refreshes the file list.
+- **Add/Choose Directory** (`<C-a>`): Chooses a recent path or prompts for one relative to `$HOME` (with tab completion). Validates the path, sets it as the active directory, saves it to cache, and refreshes the file list.
 - **Revert to Launch CWD** (`<C-.>`): Resets the search root back to `vim.fn.getcwd()`.
 - **Save Current to Cache** (`<C-s>`): Saves the current active directory as the persistent cached target.
 - **Refresh/Rescan** (`<C-r>`): Re-runs ripgrep to pick up newly created or deleted files.
@@ -71,7 +71,7 @@ While the `find_in` floating window is open, the user can change the search root
 │                                                                        │
 │                                                                        │
 │────────────────────────────────────────────────────────────────────────│
-│ <CR> open │ <C-v> vsplit │ <C-c> cached │ <C-p> path │ <C-.> cwd │ q close │
+│ <CR> open │ <C-v> vsplit │ <C-c> cached │ <C-a> add path │ <C-.> cwd │ q close │
 └────────────────────────────────────────────── 4 files (filtered from 18) ┘
 ```
 
@@ -92,7 +92,7 @@ While the `find_in` floating window is open, the user can change the search root
    - File icon rendered if `mini.icons` or `nvim-web-devicons` is installed.
    - Cursor line highlights the active selection (`CursorLine`).
 5. **Footer / Status Line**:
-   - Left: Quick keymap hints (`<CR> open`, `<C-c> cached`, `<C-p> path`, `<C-.> cwd`, `q close`).
+   - Left: Quick keymap hints (`<CR> open`, `<C-c> cached`, `<C-a> add path`, `<C-.> cwd`, `q close`).
    - Right: File count badge (`X files (filtered from Y)`).
 
 ---
@@ -108,7 +108,7 @@ While the `find_in` floating window is open, the user can change the search root
 | `<C-x>` / `<C-s>` | Split Horizontal | Opens selected file in a horizontal split and closes UI. |
 | `<C-t>` | Open Tab | Opens selected file in a new tab page and closes UI. |
 | `j` / `<Down>` / `<C-n>` | Cursor Down | Moves selection down one item. |
-| `k` / `<Up>` / `<C-p>` | Cursor Up | Moves selection up one item. |
+| `k` / `<Up>` | Cursor Up | Moves selection up one item. |
 | `q` / `<Esc>` | Close | Closes the floating window cleanly. |
 
 ### 4.2 In-UI Path Switching Keymaps
@@ -116,7 +116,7 @@ While the `find_in` floating window is open, the user can change the search root
 | Keymap | Action | Description |
 | :--- | :--- | :--- |
 | `<C-c>` | Switch to Cached | Switches search directory to the saved cached folder. |
-| `<C-p>` | Set/Type Path | Prompts for a new path relative to `~`, updates cache, and searches. |
+| `<C-a>` | Add/Choose Path | Chooses a recent path or prompts for a new path relative to `~`. |
 | `<C-.>` | Switch to CWD | Reverts search directory to Neovim's working directory (`vim.fn.getcwd()`). |
 | `<C-d>` | Bookmark to Cache | Sets the current active search directory as the new cached folder. |
 | `<C-r>` | Rescan / Refresh | Reruns ripgrep in the active directory to refresh results. |
@@ -259,11 +259,11 @@ require("find_in").setup({
 
     -- Navigation
     down = { "j", "<Down>", "<C-n>" },
-    up = { "k", "<Up>", "<C-p>" },
+    up = { "k", "<Up>" },
 
     -- Path switching actions
     switch_cached = "<C-c>",    -- Switch search to cached directory
-    switch_path = "<C-p>",      -- Prompt to enter new path relative to ~
+    switch_path = "<C-a>",      -- Choose a recent path or enter one relative to ~
     switch_cwd = "<C-.>",       -- Revert search to Neovim launch CWD
     bookmark = "<C-d>",         -- Save current directory to cache
     refresh = "<C-r>",          -- Re-scan directory with ripgrep
@@ -279,7 +279,7 @@ require("find_in").setup({
    - Requires `rg` on system `$PATH`. If missing, shows clear notification:
      `vim.notify("[find_in.nvim] 'ripgrep' (rg) is required but not found in PATH.", vim.log.levels.ERROR)`
 2. **Process Cancellation on Fast Path Switch**:
-   - When a user presses `<C-c>` or `<C-p>` while a scan is in progress, the active `vim.system` job is terminated immediately via `job:kill()` to eliminate stale UI updates and avoid wasting CPU.
+   - When a user presses `<C-c>` or `<C-a>` while a scan is in progress, the active `vim.system` job is terminated immediately via `job:kill()` to eliminate stale UI updates and avoid wasting CPU.
 3. **Non-Existent Directory**:
    - If user inputs an invalid directory relative to `~`, shows error notification and keeps previous valid search path intact.
 4. **Empty Directories / Zero Results**:
@@ -299,5 +299,5 @@ require("find_in").setup({
 2. **UI & Integration Tests**:
    - Floating window spawn, dimensions, and buffer cleanup on close.
    - Mocking `rg` output and verifying async rendering and live filtering.
-   - Path switching keymaps (`<C-c>`, `<C-p>`, `<C-.>`) properly refresh buffer contents.
+   - Path switching keymaps (`<C-c>`, `<C-a>`, `<C-.>`) properly refresh buffer contents.
    - Process cancellation when switching directories while scan is running.

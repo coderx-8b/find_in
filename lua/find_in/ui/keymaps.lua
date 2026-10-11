@@ -64,15 +64,44 @@ function M.attach(ctx)
 	end)
 	map(maps.switch_cwd, function() change(require("find_in.state").cwd) end)
 	map(maps.bookmark, function()
-		local st = require("find_in.state"); st.cached = ctx.dir; require("find_in.cache").write(ctx.dir); redraw()
+		local st = require("find_in.state"); st.cached = ctx.dir; require("find_in.cache").add_path(ctx.dir)
+		st.paths = {}
+		for _, item in ipairs(require("find_in.cache").read_paths()) do
+			local dir = require("find_in.path").parse(item.abs)
+			if dir then st.paths[#st.paths + 1] = dir end
+		end
+		redraw()
 	end)
 	map(maps.refresh, refresh)
 	map(maps.switch_path, function()
-		vim.ui.input({ prompt = "Directory relative to ~: ", completion = "dir", default = "" }, function(value)
-			if value and value ~= "" then
-				local dir, err = require("find_in.path").parse(value)
-				if dir then local st = require("find_in.state"); st.cached = dir; require("find_in.cache").write(dir); change(dir)
-				else vim.notify("[find_in.nvim] " .. err, vim.log.levels.ERROR) end
+		local path = require("find_in.path")
+		local st = require("find_in.state")
+		local choices = {}
+		for _, item in ipairs(require("find_in.cache").read_paths()) do
+			local dir = path.parse(item.abs)
+			if dir then choices[#choices + 1] = dir end
+		end
+		local add = { add_new = true }
+		choices[#choices + 1] = add
+		vim.ui.select(choices, {
+			prompt = "Switch directory (last 10 added)",
+			format_item = function(item) return item.add_new and "+ Add directory…" or path.format(item.abs) end,
+		}, function(item)
+			local function apply(value)
+				if not value or value == "" then return end
+				local dir, err = path.parse(value)
+				if not dir then vim.notify("[find_in.nvim] " .. err, vim.log.levels.ERROR); return end
+				st.cached = dir
+				require("find_in.cache").add_path(dir)
+				change(dir)
+			end
+			if not item then return end
+			if item.add_new then
+				vim.ui.input({ prompt = "Directory relative to ~: ", completion = "dir", default = "" }, apply)
+			else
+				st.cached = item
+				require("find_in.cache").write(item)
+				change(item)
 			end
 		end)
 	end)

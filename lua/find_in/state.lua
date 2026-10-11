@@ -5,6 +5,11 @@ function M.init()
 	local cached = require("find_in.cache").read()
 	M.cwd = cwd
 	M.cached = cached and path.parse(cached.abs) or nil
+	M.paths = {}
+	for _, item in ipairs(require("find_in.cache").read_paths()) do
+		local dir = path.parse(item.abs)
+		if dir then M.paths[#M.paths + 1] = dir end
+	end
 	local initial = require("find_in.config").get().initial_dir
 	M.active = type(initial) == "string" and initial ~= "cwd" and path.parse(initial)
 		or (initial == "cached" and M.cached or cwd)

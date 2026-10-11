@@ -11,7 +11,7 @@ M.defaults = {
   mappings = {
     open = { "<CR>" }, split = { "<C-x>", "<C-s>" }, vsplit = { "<C-v>" }, tab = { "<C-t>" },
     close = { "q", "<Esc>" }, down = { "j", "<Down>", "<C-n>" }, up = { "k", "<Up>" },
-    switch_cached = "<C-c>", switch_path = "<C-p>", switch_cwd = "<C-.>", bookmark = "<C-d>", refresh = "<C-r>", help = "<C-/>",
+    switch_cached = "<C-c>", switch_path = "<C-a>", switch_cwd = "<C-.>", bookmark = "<C-d>", refresh = "<C-r>", help = "<C-/>",
   },
 }
 

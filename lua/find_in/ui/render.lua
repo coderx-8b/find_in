@@ -27,7 +27,7 @@ function M.draw(ctx)
 			keys(maps.down) .. "  Move selection down",
 			keys(maps.up) .. "  Move selection up",
 			keys(maps.switch_cached) .. "  Switch to cached directory",
-			keys(maps.switch_path) .. "  Enter a directory",
+			keys(maps.switch_path) .. "  Choose recent / add directory",
 			keys(maps.switch_cwd) .. "  Switch to working directory",
 			keys(maps.bookmark) .. "  Bookmark current directory",
 			keys(maps.refresh) .. "  Rescan files",

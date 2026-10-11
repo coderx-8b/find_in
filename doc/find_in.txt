@@ -45,6 +45,10 @@ LUA API                                          *find_in-api*
     find_in.get_cached_dir()
 
 The directory query functions return { rel = "...", abs = "..." }.
+The last 10 paths added with |:FindInSetDir| or the picker are persisted in the
+cache. In the picker, |<C-a>| opens a chooser for these paths and an
+"Add directory…" entry. |<C-c>| continues to switch directly to the bookmarked
+cached directory.
 
 PICKER                                         *find_in-picker*
 
@@ -58,8 +62,8 @@ match count, and total file count.
 
 Use j/k or arrow keys to select, Enter to open, and q or Escape to close.
 Other actions include <C-v> for a vertical split, <C-x> for a horizontal
-split, <C-t> for a tab, <C-c> for cached directory, <C-p> to enter a
-directory, <C-.> for CWD, <C-d> to bookmark, and <C-r> to rescan.
+split, <C-t> for a tab, <C-c> for cached directory, <C-a> to choose a recent
+directory or add one, <C-.> for CWD, <C-d> to bookmark, and <C-r> to rescan.
 Press <C-/> to show the in-picker keymap help. Press it again to return to
 the file list. The help screen reflects configured mappings.
 
