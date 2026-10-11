@@ -103,7 +103,7 @@ While the `find_in` floating window is open, the user can change the search root
 
 | Keymap | Action | Description |
 | :--- | :--- | :--- |
-| `<CR>` / `l` | Open File | Opens selected file in the current window and closes UI. |
+| `<CR>` | Open File | Opens selected file in the current window and closes UI. |
 | `<C-v>` | Split Vertical | Opens selected file in a vertical split and closes UI. |
 | `<C-x>` / `<C-s>` | Split Horizontal | Opens selected file in a horizontal split and closes UI. |
 | `<C-t>` | Open Tab | Opens selected file in a new tab page and closes UI. |
@@ -251,7 +251,7 @@ require("find_in").setup({
   -- Buffer-local keymaps inside the floating window
   mappings = {
     -- File opening actions
-    open = { "<CR>", "l" },
+    open = { "<CR>" },
     split = { "<C-x>", "<C-s>" },
     vsplit = { "<C-v>" },
     tab = { "<C-t>" },

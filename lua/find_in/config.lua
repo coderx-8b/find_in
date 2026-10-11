@@ -9,9 +9,9 @@ M.defaults = {
   },
   ui = { width = 0.7, height = 0.6, border = "single", icons = true, prompt = "Filter: " },
   mappings = {
-    open = { "<CR>", "l" }, split = { "<C-x>", "<C-s>" }, vsplit = { "<C-v>" }, tab = { "<C-t>" },
+    open = { "<CR>" }, split = { "<C-x>", "<C-s>" }, vsplit = { "<C-v>" }, tab = { "<C-t>" },
     close = { "q", "<Esc>" }, down = { "j", "<Down>", "<C-n>" }, up = { "k", "<Up>" },
-    switch_cached = "<C-c>", switch_path = "<C-p>", switch_cwd = "<C-.>", bookmark = "<C-d>", refresh = "<C-r>", help = "<C-?>",
+    switch_cached = "<C-c>", switch_path = "<C-p>", switch_cwd = "<C-.>", bookmark = "<C-d>", refresh = "<C-r>", help = "<C-/>",
   },
 }
 
