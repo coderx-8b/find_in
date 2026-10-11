@@ -1,6 +1,4 @@
 local M = {}
-local cursor_ns = vim.api.nvim_create_namespace("find_in_hidden_cursor")
-vim.api.nvim_set_hl(cursor_ns, "Cursor", { blend = 100 })
 function M.size(value, maximum, minimum)
   local n = type(value) == "number" and value or 0.7
   if n > 0 and n <= 1 then n = math.floor(maximum * n) end
@@ -15,8 +13,8 @@ function M.open()
     title = " > ", title_pos = "left", footer = "  0 | 0 / 0 ", footer_pos = "right" })
   vim.bo[buf].buftype = "nofile"; vim.bo[buf].bufhidden = "wipe"; vim.bo[buf].swapfile = false
   vim.wo[win].cursorline = false; vim.wo[win].wrap = false; vim.wo[win].signcolumn = "no"
-  vim.api.nvim_win_set_hl_ns(win, cursor_ns)
-  vim.wo[win].winhighlight = "Cursor:Cursor,CursorIM:Cursor"
+  -- Keep the real editor cursor from obscuring the `>` selection marker.
+  vim.wo[win].winhighlight = "Cursor:Normal,CursorIM:Normal"
   return buf, win
 end
 return M
