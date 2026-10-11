@@ -47,8 +47,10 @@ LUA API                                          *find_in-api*
 The directory query functions return { rel = "...", abs = "..." }.
 The last 10 paths added with |:FindInSetDir| or the picker are persisted in the
 cache. In the picker, |<C-a>| opens a chooser for these paths and an
-"Add directory…" entry. |<C-c>| continues to switch directly to the bookmarked
-cached directory.
+"Add directory…" entry. Adding a directory makes it active and displays its
+files, while adding it to recent paths only; it does not change the bookmarked
+cached directory. Use |<C-d>| to bookmark the active directory. |<C-c>| switches
+directly to the bookmarked cached directory.
 
 PICKER                                         *find_in-picker*
 

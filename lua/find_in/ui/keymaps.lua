@@ -111,8 +111,12 @@ function M.attach(ctx)
 				if not value or value == "" then return end
 				local dir, err = path.parse(value)
 				if not dir then vim.notify("[find_in.nvim] " .. err, vim.log.levels.ERROR); return end
-				st.cached = dir
 				require("find_in.cache").add_path(dir)
+				st.paths = { dir }
+				for _, recent in ipairs(require("find_in.cache").read_paths()) do
+					local parsed = path.parse(recent.abs)
+					if parsed and parsed.abs ~= dir.abs then st.paths[#st.paths + 1] = parsed end
+				end
 				change(dir)
 			end
 			if not item then return end
@@ -148,6 +152,11 @@ function M.attach(ctx)
 	end
 	vim.on_key(function(key)
 		if not vim.api.nvim_win_is_valid(ctx.win) or vim.api.nvim_get_current_win() ~= ctx.win then return end
+		-- vim.ui.input() uses Neovim's command line in the default UI. The
+		-- picker window remains current while that prompt is open, so checking
+		-- only the current window would steal Backspace (and typed characters)
+		-- from the input prompt.
+		if vim.fn.mode():sub(1, 1) ~= "n" then return end
 		local trans = vim.fn.keytrans(key)
 		if reserved[trans] then return end
 		local changed = false

@@ -34,7 +34,7 @@ By default, the plugin initializes its search root to **the directory where Neov
 ### 2.2 In-UI Path Switching Keymaps
 While the `find_in` floating window is open, the user can change the search root on the fly:
 - **Switch to Cached Directory** (`<C-c>`): Instantly triggers ripgrep in the saved cached folder and refreshes the file list.
-- **Add/Choose Directory** (`<C-a>`): Chooses a recent path or prompts for one relative to `$HOME` (with tab completion). Validates the path, sets it as the active directory, saves it to cache, and refreshes the file list.
+- **Add/Choose Directory** (`<C-a>`): Chooses a recent path or prompts for one relative to `$HOME` (with tab completion). A new path becomes active, is saved to the recent paths list, and refreshes the file list without changing the cached directory. Use `<C-d>` to bookmark the active directory.
 - **Revert to Launch CWD** (`<C-.>`): Resets the search root back to `vim.fn.getcwd()`.
 - **Save Current to Cache** (`<C-s>`): Saves the current active directory as the persistent cached target.
 - **Refresh/Rescan** (`<C-r>`): Re-runs ripgrep to pick up newly created or deleted files.
