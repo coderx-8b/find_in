@@ -1,0 +1,57 @@
+*find_in.txt*              find_in.nvim
+
+FIND_IN                                      *find_in*
+
+find_in.nvim is a self-contained file finder for Neovim. It requires ripgrep
+(rg) and Neovim's vim.system() API.
+
+SETUP                                           *find_in-setup*
+
+    require("find_in").setup({})
+
+The default search root is |getcwd()|. Configuration may be passed to setup:
+
+    require("find_in").setup({
+      initial_dir = "cwd", -- "cached" or a path are also accepted
+      persistence = { enabled = true },
+      ripgrep = {
+        binary = "rg", hidden = false, follow_symlinks = true,
+        respect_gitignore = true, globs = { "!.git/*" },
+        additional_args = {},
+      },
+      ui = { width = 0.7, height = 0.6, border = "rounded", icons = true },
+    })
+
+COMMANDS                                        *find_in-commands*
+
+:FindIn [path]       Open at CWD or at path.
+:FindInCached        Open at the saved directory.
+:FindInSetDir [path] Save path and open there; prompts if omitted.
+:FindInCwd           Open at CWD.
+:FindInResetCache    Clear the saved directory.
+
+Paths without a root are relative to $HOME. Tilde and absolute paths are
+accepted. The cache is stored under stdpath("state")/find_in/cache.json.
+
+LUA API                                          *find_in-api*
+
+    local find_in = require("find_in")
+    find_in.open(opts)
+    find_in.open_cached(opts)
+    find_in.set_dir(path_or_opts)
+    find_in.open_cwd(opts)
+    find_in.reset_cache()
+    find_in.get_active_dir()
+    find_in.get_cached_dir()
+
+The directory query functions return { rel = "...", abs = "..." }.
+
+PICKER                                         *find_in-picker*
+
+Use j/k or arrow keys to select, Enter to open, and q or Escape to close.
+Use i to edit the live filter, then Escape to return to navigation. Other
+actions include <C-v> for a vertical split, <C-x> for a horizontal split,
+<C-t> for a tab, <C-c> for cached directory, <C-p> to enter a directory,
+<C-.> for CWD, <C-d> to bookmark, and <C-r> to rescan.
+
+All mappings can be overridden with the |find_in-setup| mappings table.
