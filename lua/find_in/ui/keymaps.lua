@@ -113,17 +113,16 @@ function M.attach(ctx)
 	end)
 	vim.keymap.set("n", "i", function()
 		vim.api.nvim_buf_set_option(ctx.buf, "modifiable", true)
-		local prompt = require("find_in.config").get().ui.prompt
-		vim.api.nvim_buf_set_lines(ctx.buf, 0, 1, false, { prompt .. ctx.query })
-		vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #prompt + #ctx.query - 1) })
+		local head = "[Find In] " .. require("find_in.path").format(ctx.dir.abs) .. " ── Query: "
+		vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #head + #ctx.query - 1) })
 		vim.cmd.startinsert({ bang = true })
 	end, { buffer = ctx.buf, silent = true })
 	vim.api.nvim_create_autocmd("TextChangedI", {
 		buffer = ctx.buf,
 		callback = function()
 			local line = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1] or ""
-			local prompt = require("find_in.config").get().ui.prompt
-			ctx.query = line:sub(#prompt + 1)
+			local head = "[Find In] " .. require("find_in.path").format(ctx.dir.abs) .. " ── Query: "
+			ctx.query = line:sub(#head + 1)
 			ctx.filtered = require("find_in.filter").apply(ctx.files, ctx.query)
 			ctx.selected = 1
 			-- TextChangedI runs while Neovim is processing an insert. Defer the
@@ -137,7 +136,7 @@ function M.attach(ctx)
 				redraw()
 				if vim.api.nvim_get_current_win() == ctx.win and vim.fn.mode():match("^i") then
 					vim.bo[ctx.buf].modifiable = true
-					vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #prompt + #ctx.query - 1) })
+					vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #head + #ctx.query - 1) })
 				end
 			end)
 		end,

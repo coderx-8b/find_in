@@ -7,7 +7,7 @@ M.defaults = {
     binary = "rg", hidden = false, follow_symlinks = true,
     respect_gitignore = true, globs = { "!.git/*" }, additional_args = {},
   },
-  ui = { width = 0.7, height = 0.6, border = "rounded", icons = true, prompt = "Filter: " },
+  ui = { width = 0.7, height = 0.6, border = "single", icons = true, prompt = "Filter: " },
   mappings = {
     open = { "<CR>", "l" }, split = { "<C-x>", "<C-s>" }, vsplit = { "<C-v>" }, tab = { "<C-t>" },
     close = { "q", "<Esc>" }, down = { "j", "<Down>", "<C-n>" }, up = { "k", "<Up>" },

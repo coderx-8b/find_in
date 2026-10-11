@@ -6,24 +6,27 @@ function M.draw(ctx)
 	end
 	local filtering = vim.api.nvim_get_current_buf() == ctx.buf and vim.fn.mode():match("^i") ~= nil
 	local width = vim.api.nvim_win_get_width(ctx.win)
-	local cached = ctx.state.cached and require("find_in.path").format(ctx.state.cached.abs) or "none"
+	local path = require("find_in.path").format(ctx.dir.abs)
+	local head = "[Find In] " .. path .. " ── Query: "
 	local lines = {
-		require("find_in.config").get().ui.prompt .. ctx.query,
-		"[Find In] " .. require("find_in.path").format(ctx.dir.abs) .. "    [Cached: " .. cached .. "]",
-		string.rep("─", math.max(1, width - 2)),
+		head .. ctx.query,
 	}
 	local first = #lines + 1
 	if #ctx.filtered == 0 then
 		lines[#lines + 1] = "  No files found in " .. require("find_in.path").format(ctx.dir.abs)
 	else
-		for _, file in ipairs(ctx.filtered) do
-			lines[#lines + 1] = "  " .. file
+		for index, file in ipairs(ctx.filtered) do
+			lines[#lines + 1] = (index == ctx.selected and "> " or "  ") .. file
 		end
 	end
 	local last = #lines
 	lines[#lines + 1] = string.rep("─", math.max(1, width - 2))
-	lines[#lines + 1] = "<CR> open │ <C-v> vsplit │ <C-c> cached │ <C-p> path │ <C-.> cwd │ q close"
-	lines[#lines + 1] = string.format("%d files (filtered from %d)", #ctx.filtered, #ctx.files)
+	lines[#lines + 1] = "<CR> open │ <C-v> vsplit │ <C-c> cached │ <C-p> path │ q close"
+	lines[#lines + 1] = string.format("%d items (filtered from %d)", #ctx.filtered, #ctx.files)
+	while #lines < vim.api.nvim_win_get_height(ctx.win) do
+		table.insert(lines, last + 1, string.rep(" ", math.max(0, width - 2)))
+		last = last + 1
+	end
 	-- Keep the buffer writable for the whole time the filter is in insert mode.
 	-- Async scans and TextChangedI both redraw this buffer; turning modifiable
 	-- off at the end of a redraw makes the next typed character fail with E21.
@@ -39,8 +42,7 @@ function M.draw(ctx)
 		end
 	end
 	if filtering then
-		local prompt = require("find_in.config").get().ui.prompt
-		vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #prompt + #ctx.query - 1) })
+		vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #head + #ctx.query - 1) })
 	else
 		vim.api.nvim_win_set_cursor(ctx.win, { math.max(first, math.min(last, first + ctx.selected - 1)), 0 })
 	end

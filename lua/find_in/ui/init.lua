@@ -10,8 +10,7 @@ function M.open(dir)
   -- Put the cursor after the prompt before queuing normal-mode append. `A`
   -- enters insert mode at end of line, so opening the picker accepts a query
   -- without relying on `:startinsert!`'s deferred cursor handling.
-  local prompt = require("find_in.config").get().ui.prompt
-  local prompt_col = #prompt
+  local prompt_col = #("[Find In] " .. require("find_in.path").format(dir.abs) .. " ── Query: ")
   vim.api.nvim_win_set_cursor(win, { 1, prompt_col })
   vim.schedule(function()
     if vim.api.nvim_win_is_valid(win) and vim.api.nvim_buf_is_valid(buf)
