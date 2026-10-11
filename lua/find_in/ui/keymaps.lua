@@ -126,11 +126,20 @@ function M.attach(ctx)
 			ctx.query = line:sub(#prompt + 1)
 			ctx.filtered = require("find_in.filter").apply(ctx.files, ctx.query)
 			ctx.selected = 1
-			redraw()
-			if vim.api.nvim_buf_is_valid(ctx.buf) then
-				vim.bo[ctx.buf].modifiable = true
-				vim.api.nvim_win_set_cursor(ctx.win, { 2, #prompt + #ctx.query })
-			end
+			-- TextChangedI runs while Neovim is processing an insert. Defer the
+			-- full-buffer redraw until that change has finished; editing the
+			-- scratch buffer from inside this callback can raise text-lock errors
+			-- and leave the filter line unmodifiable.
+			vim.schedule(function()
+				if not vim.api.nvim_buf_is_valid(ctx.buf) or not vim.api.nvim_win_is_valid(ctx.win) then
+					return
+				end
+				redraw()
+				if vim.api.nvim_get_current_win() == ctx.win and vim.fn.mode():match("^i") then
+					vim.bo[ctx.buf].modifiable = true
+					vim.api.nvim_win_set_cursor(ctx.win, { 2, #prompt + #ctx.query })
+				end
+			end)
 		end,
 	})
 	vim.api.nvim_create_autocmd("InsertLeave", {
