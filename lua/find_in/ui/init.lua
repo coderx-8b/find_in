@@ -8,14 +8,14 @@ function M.open(dir)
   -- Focus the filter field immediately so the picker accepts a query on open.
   vim.bo[buf].modifiable = true
   local prompt = require("find_in.config").get().ui.prompt
-  vim.api.nvim_win_set_cursor(win, { 2, #prompt })
+  vim.api.nvim_win_set_cursor(win, { 1, #prompt })
   vim.schedule(function()
     if vim.api.nvim_win_is_valid(win) and vim.api.nvim_buf_is_valid(buf)
       and vim.api.nvim_get_current_win() == win then
       -- A scan may have redrawn the picker before this scheduled callback.
       -- Re-enable edits after that redraw and immediately before entering insert.
       vim.bo[buf].modifiable = true
-      vim.api.nvim_win_set_cursor(win, { 2, #prompt })
+      vim.api.nvim_win_set_cursor(win, { 1, #prompt })
       vim.cmd.startinsert()
     end
   end)

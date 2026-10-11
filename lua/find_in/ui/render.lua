@@ -5,8 +5,9 @@ function M.draw(ctx)
   local filtering = vim.api.nvim_get_current_buf() == ctx.buf and vim.fn.mode():match("^i") ~= nil
   local width = vim.api.nvim_win_get_width(ctx.win)
   local cached = ctx.state.cached and require("find_in.path").format(ctx.state.cached.abs) or "none"
-  local lines = { "[Find In] " .. require("find_in.path").format(ctx.dir.abs) .. "    [Cached: " .. cached .. "]",
-    require("find_in.config").get().ui.prompt .. ctx.query, string.rep("─", math.max(1, width - 2)) }
+  local lines = { require("find_in.config").get().ui.prompt .. ctx.query,
+    "[Find In] " .. require("find_in.path").format(ctx.dir.abs) .. "    [Cached: " .. cached .. "]",
+    string.rep("─", math.max(1, width - 2)) }
   local first = #lines + 1
   if #ctx.filtered == 0 then lines[#lines + 1] = "  No files found in " .. require("find_in.path").format(ctx.dir.abs)
   else
@@ -29,7 +30,7 @@ function M.draw(ctx)
   end
   if filtering then
     local prompt = require("find_in.config").get().ui.prompt
-    vim.api.nvim_win_set_cursor(ctx.win, { 2, #prompt + #ctx.query })
+    vim.api.nvim_win_set_cursor(ctx.win, { 1, #prompt + #ctx.query })
   else
     vim.api.nvim_win_set_cursor(ctx.win, { math.max(first, math.min(last, first + ctx.selected - 1)), 0 })
   end

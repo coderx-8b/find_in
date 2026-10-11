@@ -114,14 +114,14 @@ function M.attach(ctx)
 	vim.keymap.set("n", "i", function()
 		vim.api.nvim_buf_set_option(ctx.buf, "modifiable", true)
 		local prompt = require("find_in.config").get().ui.prompt
-		vim.api.nvim_buf_set_lines(ctx.buf, 1, 2, false, { prompt .. ctx.query })
-		vim.api.nvim_win_set_cursor(ctx.win, { 2, #prompt + #ctx.query })
+		vim.api.nvim_buf_set_lines(ctx.buf, 0, 1, false, { prompt .. ctx.query })
+		vim.api.nvim_win_set_cursor(ctx.win, { 1, #prompt + #ctx.query })
 		vim.cmd.startinsert()
 	end, { buffer = ctx.buf, silent = true })
 	vim.api.nvim_create_autocmd("TextChangedI", {
 		buffer = ctx.buf,
 		callback = function()
-			local line = vim.api.nvim_buf_get_lines(ctx.buf, 1, 2, false)[1] or ""
+			local line = vim.api.nvim_buf_get_lines(ctx.buf, 0, 1, false)[1] or ""
 			local prompt = require("find_in.config").get().ui.prompt
 			ctx.query = line:sub(#prompt + 1)
 			ctx.filtered = require("find_in.filter").apply(ctx.files, ctx.query)
@@ -137,7 +137,7 @@ function M.attach(ctx)
 				redraw()
 				if vim.api.nvim_get_current_win() == ctx.win and vim.fn.mode():match("^i") then
 					vim.bo[ctx.buf].modifiable = true
-					vim.api.nvim_win_set_cursor(ctx.win, { 2, #prompt + #ctx.query })
+					vim.api.nvim_win_set_cursor(ctx.win, { 1, #prompt + #ctx.query })
 				end
 			end)
 		end,
