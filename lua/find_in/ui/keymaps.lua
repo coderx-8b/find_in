@@ -83,10 +83,30 @@ function M.attach(ctx)
 		end
 		local add = { add_new = true }
 		choices[#choices + 1] = add
-		vim.ui.select(choices, {
-			prompt = "Switch directory (last 10 added)",
-			format_item = function(item) return item.add_new and "+ Add directory…" or path.format(item.abs) end,
-		}, function(item)
+		local choice_buf, choice_win = require("find_in.ui.window").open({
+			title = " Switch directory ", footer = "  j/k move · Enter choose · Esc close  ",
+		})
+		local selected = 1
+		local function close_choices()
+			if vim.api.nvim_win_is_valid(choice_win) then vim.api.nvim_win_close(choice_win, true) end
+		end
+		local function draw_choices()
+			if not vim.api.nvim_buf_is_valid(choice_buf) then return end
+			local lines = {}
+			for i, item in ipairs(choices) do
+				local label = item.add_new and "+ Add directory…" or path.format(item.abs)
+				lines[i] = (i == selected and "> " or "  ") .. label
+			end
+			vim.bo[choice_buf].modifiable = true
+			vim.api.nvim_buf_set_lines(choice_buf, 0, -1, false, lines)
+			vim.bo[choice_buf].modifiable = false
+			if vim.api.nvim_win_is_valid(choice_win) then
+				vim.api.nvim_win_set_cursor(choice_win, { selected, 0 })
+			end
+		end
+		local function choose()
+			local item = choices[selected]
+			close_choices()
 			local function apply(value)
 				if not value or value == "" then return end
 				local dir, err = path.parse(value)
@@ -103,7 +123,17 @@ function M.attach(ctx)
 				require("find_in.cache").write(item)
 				change(item)
 			end
-		end)
+		end
+		local function bind(keys, fn)
+			for _, key in ipairs(keys) do
+				vim.keymap.set("n", key, fn, { buffer = choice_buf, silent = true, nowait = true })
+			end
+		end
+		bind({ "j", "<Down>" }, function() selected = math.min(#choices, selected + 1); draw_choices() end)
+		bind({ "k", "<Up>" }, function() selected = math.max(1, selected - 1); draw_choices() end)
+		bind({ "<CR>" }, choose)
+		bind({ "q", "<Esc>" }, close_choices)
+		draw_choices()
 	end)
 
 	-- Capture printable keys in normal mode so the picker remains a single
