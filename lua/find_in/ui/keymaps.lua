@@ -115,8 +115,8 @@ function M.attach(ctx)
 		vim.api.nvim_buf_set_option(ctx.buf, "modifiable", true)
 		local prompt = require("find_in.config").get().ui.prompt
 		vim.api.nvim_buf_set_lines(ctx.buf, 0, 1, false, { prompt .. ctx.query })
-		vim.api.nvim_win_set_cursor(ctx.win, { 1, #prompt + #ctx.query })
-		vim.cmd.startinsert()
+		vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #prompt + #ctx.query - 1) })
+		vim.cmd.startinsert({ bang = true })
 	end, { buffer = ctx.buf, silent = true })
 	vim.api.nvim_create_autocmd("TextChangedI", {
 		buffer = ctx.buf,
@@ -137,7 +137,7 @@ function M.attach(ctx)
 				redraw()
 				if vim.api.nvim_get_current_win() == ctx.win and vim.fn.mode():match("^i") then
 					vim.bo[ctx.buf].modifiable = true
-					vim.api.nvim_win_set_cursor(ctx.win, { 1, #prompt + #ctx.query })
+					vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #prompt + #ctx.query - 1) })
 				end
 			end)
 		end,

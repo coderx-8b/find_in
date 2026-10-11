@@ -30,7 +30,7 @@ function M.draw(ctx)
   end
   if filtering then
     local prompt = require("find_in.config").get().ui.prompt
-    vim.api.nvim_win_set_cursor(ctx.win, { 1, #prompt + #ctx.query })
+    vim.api.nvim_win_set_cursor(ctx.win, { 1, math.max(0, #prompt + #ctx.query - 1) })
   else
     vim.api.nvim_win_set_cursor(ctx.win, { math.max(first, math.min(last, first + ctx.selected - 1)), 0 })
   end
