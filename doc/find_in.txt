@@ -24,7 +24,7 @@ The default search root is |getcwd()|. Configuration may be passed to setup:
 
 COMMANDS                                        *find_in-commands*
 
-:FindIn [path]       Open at CWD or at path.
+:FindIn [path]       Open at CWD or at path. Use `buffer` to pick a loaded buffer.
 :FindInCached        Open at the saved directory.
 :FindInSetDir [path] Save path and open there; prompts if omitted.
 :FindInCwd           Open at CWD.
@@ -62,12 +62,14 @@ query and Backspace deletes its last character. The top border shows the
 query and active directory; the bottom border shows the current match index,
 match count, and total file count.
 
-Use <C-n>/<C-p> or arrow keys to select, Enter to open, and q or Escape to close.
+Use <C-n>/<C-p> or arrow keys to select, Enter to open, and <C-q> or Escape
+to close. The q key is available as a filter character.
 Other actions include <C-v> for a vertical split, <C-x> for a horizontal
 split, <C-t> for a tab, <C-c> for cached directory, <C-a> to choose a recent
 directory or add one, <C-.> for CWD, <C-d> to bookmark, and <C-r> to rescan.
 Press <C-/> to show the in-picker keymap help. Press it again to return to
-the file list. The help screen reflects configured mappings.
+the file list. The help screen reflects configured mappings; use j and k to
+move through it. Typing in the help screen does not change the filter query.
 
 All mappings can be overridden with the |find_in-setup| mappings table.
 

@@ -13,7 +13,7 @@ function M.open(opts)
     row = math.floor((lines - height) / 2) - 1, col = math.floor((columns - width) / 2), border = cfg.border,
     title = opts.title or " > ", title_pos = "left", footer = opts.footer or "  0 | 0 / 0 ", footer_pos = "right" })
   vim.bo[buf].buftype = "nofile"; vim.bo[buf].bufhidden = "wipe"; vim.bo[buf].swapfile = false
-  vim.wo[win].cursorline = false; vim.wo[win].wrap = false; vim.wo[win].signcolumn = "no"
+  vim.wo[win].cursorline = true; vim.wo[win].wrap = false; vim.wo[win].signcolumn = "no"
   -- Keep the real editor cursor from obscuring the `>` selection marker.
   -- Neovim can render the terminal cursor through either Cursor or
   -- TermCursor depending on the UI. Hide both in this window.

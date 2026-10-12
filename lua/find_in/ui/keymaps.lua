@@ -11,12 +11,29 @@ function M.attach(ctx)
 		each(keys, function(key) vim.keymap.set("n", key, fn, { buffer = ctx.buf, silent = true, nowait = true, noremap = true }) end)
 	end
 	local function add_to_query(value)
+		if ctx.show_help then return end
 		ctx.query = ctx.query .. value
 		ctx.filtered = require("find_in.filter").apply(ctx.files, ctx.query)
 		ctx.selected = 1
 		redraw()
 	end
 	local function refresh()
+		if ctx.is_buffer_picker then
+			local labels, by_label, seen = {}, {}, {}
+			for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+				if vim.api.nvim_buf_is_loaded(buf) then
+					local name = vim.api.nvim_buf_get_name(buf)
+					local label = name ~= "" and vim.fn.fnamemodify(name, ":~:.") or "[No Name]"
+					if seen[label] then label = label .. "  (" .. buf .. ")" end
+					seen[label], by_label[label] = true, buf; labels[#labels + 1] = label
+				end
+			end
+			table.sort(labels, function(a, b) return a:lower() < b:lower() end)
+			ctx.files, ctx.buffer_by_label = labels, by_label
+			ctx.filtered = require("find_in.filter").apply(labels, ctx.query)
+			ctx.selected = math.min(math.max(ctx.selected, 1), math.max(1, #ctx.filtered)); redraw()
+			return
+		end
 		require("find_in.rg").scan(ctx.dir, function(files)
 			ctx.files = files
 			ctx.filtered = require("find_in.filter").apply(files, ctx.query)
@@ -34,9 +51,25 @@ function M.attach(ctx)
 		if ctx.key_ns then vim.on_key(nil, ctx.key_ns); ctx.key_ns = nil end
 		if vim.api.nvim_win_is_valid(ctx.win) then vim.api.nvim_win_close(ctx.win, true) end
 	end
+	local function move_help_cursor(delta)
+		if not ctx.show_help then return false end
+		if not vim.api.nvim_win_is_valid(ctx.win) then return true end
+		local row = vim.api.nvim_win_get_cursor(ctx.win)[1]
+		local line_count = vim.api.nvim_buf_line_count(ctx.buf)
+		vim.api.nvim_win_set_cursor(ctx.win, { math.max(1, math.min(line_count, row + delta)), 0 })
+		return true
+	end
 	local function open(kind)
 		local file = ctx.filtered[ctx.selected]
 		if not file then return end
+		if ctx.is_buffer_picker then
+			local target = ctx.buffer_by_label[file]
+			if not target or not vim.api.nvim_buf_is_valid(target) then refresh(); return end
+			close()
+			if kind == "vsplit" then vim.cmd("vsplit") elseif kind == "split" then vim.cmd("split") elseif kind == "tab" then vim.cmd("tabnew") end
+			vim.api.nvim_set_current_buf(target)
+			return
+		end
 		local target = ctx.dir.abs .. "/" .. file
 		close()
 		if kind == "vsplit" then vim.cmd("vsplit") elseif kind == "split" then vim.cmd("split") elseif kind == "tab" then vim.cmd("tabnew") end
@@ -52,6 +85,8 @@ function M.attach(ctx)
 
 	map(maps.close, close)
 	map(maps.help, function() ctx.show_help = not ctx.show_help; redraw() end)
+	map("j", function() if not move_help_cursor(1) then add_to_query("j") end end)
+	map("k", function() if not move_help_cursor(-1) then add_to_query("k") end end)
 	map(maps.down, function() ctx.selected = math.min(#ctx.filtered, ctx.selected + 1); redraw() end)
 	map(maps.up, function() ctx.selected = math.max(1, ctx.selected - 1); redraw() end)
 	map(maps.open, function() open("open") end)
@@ -105,6 +140,13 @@ function M.attach(ctx)
 			end
 		end
 		local function choose()
+			-- The cursor can move independently of `selected` (for example via
+			-- mouse clicks or native j/k navigation). Treat the visible row as
+			-- the source of truth when Enter is pressed.
+			if vim.api.nvim_win_is_valid(choice_win) then
+				local row = vim.api.nvim_win_get_cursor(choice_win)[1]
+				if row >= 1 and row <= #choices then selected = row end
+			end
 			local item = choices[selected]
 			close_choices()
 			local function apply(value)
@@ -135,6 +177,8 @@ function M.attach(ctx)
 		end
 		bind({ "<C-n>", "<Down>" }, function() selected = math.min(#choices, selected + 1); draw_choices() end)
 		bind({ "<C-p>", "<Up>" }, function() selected = math.max(1, selected - 1); draw_choices() end)
+		bind({ "j" }, function() selected = math.min(#choices, selected + 1); draw_choices() end)
+		bind({ "k" }, function() selected = math.max(1, selected - 1); draw_choices() end)
 		bind({ "<CR>" }, choose)
 		bind({ "q", "<Esc>" }, close_choices)
 		draw_choices()
@@ -157,6 +201,7 @@ function M.attach(ctx)
 		-- only the current window would steal Backspace (and typed characters)
 		-- from the input prompt.
 		if vim.fn.mode():sub(1, 1) ~= "n" then return end
+		if ctx.show_help then return end
 		local trans = vim.fn.keytrans(key)
 		if reserved[trans] then return end
 		local changed = false

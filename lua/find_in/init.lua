@@ -35,6 +35,21 @@ function M.open(opts)
 	s.active = dir
 	return require("find_in.ui").open(dir)
 end
+function M.open_buffers()
+	local buffers = vim.api.nvim_list_bufs()
+	local entries, seen = {}, {}
+	for _, buf in ipairs(buffers) do
+		if vim.api.nvim_buf_is_loaded(buf) then
+			local name = vim.api.nvim_buf_get_name(buf)
+			local label = name ~= "" and vim.fn.fnamemodify(name, ":~:.") or "[No Name]"
+			if seen[label] then label = label .. "  (" .. buf .. ")" end
+			seen[label] = true
+			entries[#entries + 1] = { label = label, bufnr = buf }
+		end
+	end
+	table.sort(entries, function(a, b) return a.label:lower() < b.label:lower() end)
+	return require("find_in.ui").open_buffers(entries)
+end
 function M.open_cached(opts)
 	local s = state()
 	if not s.cached then

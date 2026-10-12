@@ -14,7 +14,7 @@ By default, the plugin initializes its search root to **the directory where Neov
    - The only external requirement is `ripgrep` (`rg`) for multi-threaded file listing.
 2. **Aesthetics & Ergonomics Inspired by `mini.files`**:
    - Clean, centered floating window with subtle borders and clear path indicators.
-   - Buffer-local keybindings (`<C-n>`/`<C-p>`, `<CR>`, `q`, `<C-v>`, `<C-s>`).
+   - Buffer-local keybindings (`<C-n>`/`<C-p>`, `<CR>`, `<C-q>`, `<C-v>`, `<C-s>`).
    - Integrated live filtering for instantaneous item narrowing.
    - Optional file icons (auto-detects `mini.icons` or `nvim-web-devicons` if available, falls back gracefully to plain text).
 3. **Frictionless Path Switching**:
@@ -71,7 +71,7 @@ While the `find_in` floating window is open, the user can change the search root
 │                                                                        │
 │                                                                        │
 │────────────────────────────────────────────────────────────────────────│
-│ <CR> open │ <C-v> vsplit │ <C-c> cached │ <C-a> add path │ <C-.> cwd │ q close │
+│ <CR> open │ <C-v> vsplit │ <C-c> cached │ <C-a> add path │ <C-.> cwd │ <C-q> close │
 └────────────────────────────────────────────── 4 files (filtered from 18) ┘
 ```
 
@@ -92,7 +92,7 @@ While the `find_in` floating window is open, the user can change the search root
    - File icon rendered if `mini.icons` or `nvim-web-devicons` is installed.
    - Cursor line highlights the active selection (`CursorLine`).
 5. **Footer / Status Line**:
-   - Left: Quick keymap hints (`<CR> open`, `<C-c> cached`, `<C-a> add path`, `<C-.> cwd`, `q close`).
+   - Left: Quick keymap hints (`<CR> open`, `<C-c> cached`, `<C-a> add path`, `<C-.> cwd`, `<C-q> close`).
    - Right: File count badge (`X files (filtered from Y)`).
 
 ---
@@ -109,7 +109,7 @@ While the `find_in` floating window is open, the user can change the search root
 | `<C-t>` | Open Tab | Opens selected file in a new tab page and closes UI. |
 | `<C-n>` / `<Down>` | Cursor Down | Moves selection down one item. |
 | `<C-p>` / `<Up>` | Cursor Up | Moves selection up one item. |
-| `q` / `<Esc>` | Close | Closes the floating window cleanly. |
+| `<C-q>` / `<Esc>` | Close | Closes the floating window cleanly. |
 
 ### 4.2 In-UI Path Switching Keymaps
 
@@ -255,7 +255,7 @@ require("find_in").setup({
     split = { "<C-x>", "<C-s>" },
     vsplit = { "<C-v>" },
     tab = { "<C-t>" },
-    close = { "q", "<Esc>" },
+    close = { "<C-q>", "<Esc>" },
 
     -- Navigation
     down = { "<Down>", "<C-n>" },
