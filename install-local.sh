@@ -10,7 +10,7 @@ fi
 
 # Neovim's stdpath("data") follows XDG_DATA_HOME and appends "nvim".
 NVIM_DATA_DIR="${XDG_DATA_HOME:-${HOME:?HOME must be set}/.local/share}/nvim"
-DEST_DIR="${1:-$NVIM_DATA_DIR/site/pack/local/start/find_in}"
+DEST_DIR="${1:-$NVIM_DATA_DIR/site/pack/core/opt/find_in}"
 
 if ! command -v rsync >/dev/null 2>&1; then
   printf 'Error: rsync is required to update the plugin copy.\n' >&2

@@ -39,7 +39,7 @@ function M.open_buffers()
 	local buffers = vim.api.nvim_list_bufs()
 	local entries, seen = {}, {}
 	for _, buf in ipairs(buffers) do
-		if vim.api.nvim_buf_is_loaded(buf) then
+		if vim.api.nvim_buf_is_loaded(buf) and (vim.bo[buf].buflisted or vim.bo[buf].buftype == "help") then
 			local name = vim.api.nvim_buf_get_name(buf)
 			local label = name ~= "" and vim.fn.fnamemodify(name, ":~:.") or "[No Name]"
 			if seen[label] then label = label .. "  (" .. buf .. ")" end
@@ -49,6 +49,66 @@ function M.open_buffers()
 	end
 	table.sort(entries, function(a, b) return a.label:lower() < b.label:lower() end)
 	return require("find_in.ui").open_buffers(entries)
+end
+function M.open_help_tags()
+	-- Empty-prefix help completion is intentionally a short list in Neovim.
+	-- Read every runtime doc tag file so Vim's built-in help topics are included
+	-- alongside Neovim's help and any other runtime documentation.
+	local tags, seen = {}, {}
+	local tag_files = vim.fn.globpath(vim.o.runtimepath, "doc/tags", false, true)
+	for _, path in ipairs(tag_files) do
+		for line in io.lines(path) do
+			local tag = line:match("^([^\t]+)\t")
+			if tag and not seen[tag] then
+				seen[tag] = true
+				tags[#tags + 1] = tag
+			end
+		end
+	end
+	-- Keep completion results too, for help topics that are supplied by
+	-- Neovim but do not have a conventional doc/tags entry.
+	for _, tag in ipairs(vim.fn.getcompletion("", "help")) do
+		if not seen[tag] then
+			seen[tag] = true
+			tags[#tags + 1] = tag
+		end
+	end
+	local man_pages, api_topics = {}, {}
+	-- Help tags use names such as `nvim_get_current_buf`, while Neovim's Lua
+	-- API exposes them as `vim.api.nvim_get_current_buf()`. Add the Lua-facing
+	-- names as searchable aliases and keep their help targets for opening.
+	for name, value in pairs(vim.api) do
+		if type(value) == "function" and name:match("^nvim_") then
+			local label = "vim.api." .. name .. "()"
+			if not seen[label] then
+				seen[label] = true
+				api_topics[label] = name
+				tags[#tags + 1] = label
+			end
+		end
+	end
+	-- `:Man` pages are not part of Neovim's help completion. Use the system
+	-- whatis index to add the installed manual entries when available.
+	local pipe = io.popen("man -k . 2>/dev/null")
+	if pipe then
+		for line in pipe:lines() do
+			local names, section = line:match("^(.-)%s+%(([^()]*)%)%s+%-")
+			if names and section then
+				for name in names:gmatch("[^,]+") do
+					name = vim.trim(name)
+					local label = name .. "(" .. section .. ")"
+					if not seen[label] then
+						seen[label] = true
+						man_pages[label] = { name = name, section = section }
+						tags[#tags + 1] = label
+					end
+				end
+			end
+		end
+		pipe:close()
+	end
+	table.sort(tags, function(a, b) return a:lower() < b:lower() end)
+	return require("find_in.ui").open_help_tags(tags, man_pages, api_topics)
 end
 function M.open_cached(opts)
 	local s = state()

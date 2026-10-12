@@ -20,6 +20,9 @@ end, {
 		return require("find_in.complete").complete(arglead)
 	end,
 })
+vim.api.nvim_create_user_command("FindInHelp", function()
+	find_in.open_help_tags()
+end, {})
 vim.api.nvim_create_user_command("FindInCached", function()
 	find_in.open_cached()
 end, {})

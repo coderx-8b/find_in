@@ -18,10 +18,15 @@ function M.attach(ctx)
 		redraw()
 	end
 	local function refresh()
+		if ctx.is_help_picker then
+			ctx.filtered = require("find_in.filter").apply(ctx.files, ctx.query)
+			ctx.selected = math.min(math.max(ctx.selected, 1), math.max(1, #ctx.filtered)); redraw()
+			return
+		end
 		if ctx.is_buffer_picker then
 			local labels, by_label, seen = {}, {}, {}
 			for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-				if vim.api.nvim_buf_is_loaded(buf) then
+				if vim.api.nvim_buf_is_loaded(buf) and (vim.bo[buf].buflisted or vim.bo[buf].buftype == "help") then
 					local name = vim.api.nvim_buf_get_name(buf)
 					local label = name ~= "" and vim.fn.fnamemodify(name, ":~:.") or "[No Name]"
 					if seen[label] then label = label .. "  (" .. buf .. ")" end
@@ -35,6 +40,7 @@ function M.attach(ctx)
 			return
 		end
 		require("find_in.rg").scan(ctx.dir, function(files)
+			if not vim.api.nvim_win_is_valid(ctx.win) then return end
 			ctx.files = files
 			ctx.filtered = require("find_in.filter").apply(files, ctx.query)
 			ctx.selected = math.min(math.max(ctx.selected, 1), math.max(1, #ctx.filtered))
@@ -44,6 +50,9 @@ function M.attach(ctx)
 	local function change(dir)
 		if not dir then return end
 		require("find_in.state").set_active(dir)
+		-- Directory switching is also available from the buffers picker. Once
+		-- one of those actions is used, turn the same window into a file picker.
+		ctx.is_buffer_picker, ctx.buffer_by_label = false, nil
 		ctx.dir, ctx.files, ctx.filtered, ctx.selected, ctx.query = dir, {}, {}, 1, ""
 		redraw(); refresh()
 	end
@@ -70,6 +79,25 @@ function M.attach(ctx)
 			vim.api.nvim_set_current_buf(target)
 			return
 		end
+		if ctx.is_help_picker then
+			local man_page = ctx.man_pages and ctx.man_pages[file]
+			local api_topic = ctx.api_topics and ctx.api_topics[file]
+			close()
+			if kind == "vsplit" then vim.cmd("vsplit") elseif kind == "split" then vim.cmd("split") elseif kind == "tab" then vim.cmd("tabnew") end
+			local source_win = vim.api.nvim_get_current_win()
+			if man_page then
+				vim.cmd.Man({ args = { man_page.section, man_page.name } })
+			else
+				vim.cmd.help({ bang = true, args = { api_topic or file } })
+			end
+			-- `:help!` still opens a new window. For the default action, remove
+			-- the source window so the help topic replaces it like a file entry.
+			if kind == "open" and source_win ~= vim.api.nvim_get_current_win()
+				and vim.api.nvim_win_is_valid(source_win) then
+				vim.api.nvim_win_close(source_win, true)
+			end
+			return
+		end
 		local target = ctx.dir.abs .. "/" .. file
 		close()
 		if kind == "vsplit" then vim.cmd("vsplit") elseif kind == "split" then vim.cmd("split") elseif kind == "tab" then vim.cmd("tabnew") end
@@ -84,6 +112,9 @@ function M.attach(ctx)
 	end
 
 	map(maps.close, close)
+	-- In the filesystem picker this key switches to the cached directory.
+	-- Standalone pickers have no directory to switch to, so make it a close key.
+	if ctx.is_buffer_picker or ctx.is_help_picker then map(maps.switch_cached, close) end
 	map(maps.help, function() ctx.show_help = not ctx.show_help; redraw() end)
 	map("j", function() if not move_help_cursor(1) then add_to_query("j") end end)
 	map("k", function() if not move_help_cursor(-1) then add_to_query("k") end end)
@@ -93,11 +124,16 @@ function M.attach(ctx)
 	map(maps.vsplit, function() open("vsplit") end)
 	map(maps.split, function() open("split") end)
 	map(maps.tab, function() open("tab") end)
-	map(maps.switch_cached, function()
-		local st = require("find_in.state")
-		if st.cached then change(st.cached) else vim.notify("[find_in.nvim] No cached directory", vim.log.levels.WARN) end
-	end)
-	map(maps.switch_cwd, function() change(require("find_in.state").cwd) end)
+	-- The cached-directory shortcut only applies to the filesystem picker.
+	-- Help and buffer pickers are standalone lists and must stay in that mode
+	-- when the same key is pressed.
+	if not ctx.is_buffer_picker and not ctx.is_help_picker then
+		map(maps.switch_cached, function()
+			local st = require("find_in.state")
+			if st.cached then change(st.cached) else vim.notify("[find_in.nvim] No cached directory", vim.log.levels.WARN) end
+		end)
+		map(maps.switch_cwd, function() change(require("find_in.state").cwd) end)
+	end
 	map(maps.bookmark, function()
 		local st = require("find_in.state"); st.cached = ctx.dir; require("find_in.cache").add_path(ctx.dir)
 		st.paths = {}

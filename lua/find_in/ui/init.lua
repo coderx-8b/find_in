@@ -13,7 +13,16 @@ function M.open_buffers(entries)
   for _, entry in ipairs(entries) do labels[#labels + 1] = entry.label; by_label[entry.label] = entry.bufnr end
   local ctx = { buf = buf, win = win, dir = { abs = "Buffers" }, files = labels, filtered = vim.deepcopy(labels), query = "", selected = 1, buffer_by_label = by_label, is_buffer_picker = true }
   require("find_in.ui.render").draw(ctx)
-  require("find_in.ui.keymaps").attach(ctx)
+  local refresh = require("find_in.ui.keymaps").attach(ctx)
+  refresh()
+  return ctx
+end
+function M.open_help_tags(tags, man_pages, api_topics)
+  local buf, win = require("find_in.ui.window").open({ title = " > help tags ▏ ", footer = "  0 | 0 / 0 " })
+  local ctx = { buf = buf, win = win, dir = { abs = "Help tags" }, files = tags, filtered = vim.deepcopy(tags), query = "", selected = 1, is_help_picker = true, man_pages = man_pages or {}, api_topics = api_topics or {} }
+  require("find_in.ui.render").draw(ctx)
+  local refresh = require("find_in.ui.keymaps").attach(ctx)
+  refresh()
   return ctx
 end
 return M

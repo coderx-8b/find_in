@@ -32,6 +32,12 @@ end
 function M.match(text, query)
 	local mode, needle = prepare(query or "")
 	local value = text:lower()
+	return M.match_prepared(value, mode, needle)
+end
+
+-- `apply` tests many items against the same query. Prepare the query once and
+-- lowercase each item once instead of repeating both operations per match.
+function M.match_prepared(value, mode, needle)
 	if needle == "" then return { score = 0, positions = {} } end
 	if mode == "exact" then
 		local at = value:find(needle, 1, true)
@@ -63,9 +69,10 @@ end
 
 function M.apply(items, query)
 	if not query or query == "" then return vim.deepcopy(items) end
+	local mode, needle = prepare(query)
 	local matches = {}
 	for _, item in ipairs(items) do
-		local result = M.match(item, query)
+		local result = M.match_prepared(item:lower(), mode, needle)
 		if result then matches[#matches + 1] = { item = item, score = result.score, start = result.positions[1] or 0 } end
 	end
 	table.sort(matches, function(a, b)

@@ -3,7 +3,7 @@ local ns = vim.api.nvim_create_namespace("find_in")
 
 function M.draw(ctx)
 	if not vim.api.nvim_buf_is_valid(ctx.buf) or not vim.api.nvim_win_is_valid(ctx.win) then return end
-	local location = ctx.is_buffer_picker and "buffers" or require("find_in.path").format(ctx.dir.abs)
+	local location = ctx.is_buffer_picker and "buffers" or (ctx.is_help_picker and "help tags" or require("find_in.path").format(ctx.dir.abs))
 	local title = " > " .. ctx.query .. " ▏ " .. location .. " "
 	local total, count = #ctx.files, #ctx.filtered
 	local footer = string.format(" %d | %d / %d ", count == 0 and 0 or ctx.selected, count, total)
@@ -36,7 +36,7 @@ function M.draw(ctx)
 			"<C-u>  Clear query; <BS>  Delete last query character",
 		}
 	elseif count == 0 then
-		lines[1] = ctx.query == "" and (ctx.is_buffer_picker and "No buffers" or "No files found") or "No matches"
+		lines[1] = ctx.query == "" and (ctx.is_buffer_picker and "No buffers" or (ctx.is_help_picker and "No help tags" or "No files found")) or "No matches"
 	else
 		local available = math.max(1, vim.api.nvim_win_get_height(ctx.win))
 		first_item = math.max(1, math.min(ctx.selected - math.floor(available / 2), count - available + 1))
