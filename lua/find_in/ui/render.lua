@@ -56,7 +56,7 @@ function M.draw(ctx)
 		local match = require("find_in.filter").match(file, ctx.query)
 		if match then
 			for _, col in ipairs(match.positions) do
-				vim.api.nvim_buf_add_highlight(ctx.buf, ns, "IncSearch", ctx.selected - first_item, col + 1, col + 2)
+				vim.api.nvim_buf_add_highlight(ctx.buf, ns, "FindInMatch", ctx.selected - first_item, col + 1, col + 2)
 			end
 		end
 	end

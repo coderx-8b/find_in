@@ -70,3 +70,11 @@ Press <C-/> to show the in-picker keymap help. Press it again to return to
 the file list. The help screen reflects configured mappings.
 
 All mappings can be overridden with the |find_in-setup| mappings table.
+
+HIGHLIGHTING                                    *find_in-highlighting*
+
+Matched characters in the selected file use the |FindInMatch| highlight group.
+By default, this group links to |IncSearch|. Define it to customize match
+colors without changing Neovim's search highlighting:
+
+    vim.api.nvim_set_hl(0, "FindInMatch", { fg = "#1e1e2e", bg = "#f9e2af", bold = true })

@@ -9,6 +9,15 @@ local function state()
 end
 function M.setup(opts)
 	config.setup(opts)
+	local function set_default_highlight()
+		vim.api.nvim_set_hl(0, "FindInMatch", { default = true, link = "IncSearch" })
+	end
+	set_default_highlight()
+	local group = vim.api.nvim_create_augroup("FindInHighlights", { clear = true })
+	vim.api.nvim_create_autocmd("ColorScheme", {
+		group = group,
+		callback = set_default_highlight,
+	})
 	require("find_in.state").init()
 	return M
 end
